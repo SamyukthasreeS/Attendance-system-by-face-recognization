@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    
+    <title>Parking Lot</title>
+    <style>
+    *{
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    padding:0;
+    margin:0;
+    border:0
+    }
+
+    header{
+            font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+            font-size: large;
+            color: palevioletred;
+            background-color:black;
+
+    }
+    h2,h5{
+            text-align: center;
+            background-color: black;
+            color:palevioletred;
+        }
+    #button1{
+            color:blanchedalmond;
+            background-color: blueviolet;
+        }
+
+
+    </style>
+</head>
+
+<body style="background-color:palevioletred;">
+    <header align="center">
+        <div>
+            <h1>Parking Lot Management</h1>
+        </div>
+    </header>
+    <div class="form-container">
+        <form class="w-50 mx-auto" id="entryForm">
+            <h5 style="font-size: larger;">Add Car to Parking Lot</h5>
+            <div class="form-group">
+                <label for="Owner">Owner:</label>
+                <input type="text" class="form-control" id="Owner">
+            </div>
+            <div class="form-group">
+                <label for="Car">Car:</label>
+                <input type="text" class="form-control" id="Car" >
+            </div>
+            <div class="form-group">
+                <label for="LicensePlate">License Plate:</label>
+                <input type="text" class="form-control" id="LicensePlate">
+            </div>
+            <div class="d-flex justify-content-center">
+                <div>
+                    <label for="EntryDate">Entry Date:</label>
+                    <input type="date" class="form-control" id="EntryDate">
+                </div>
+                <div>
+                    <label for="ExitDate">Exit Date:</label>
+                    <input type="date" class="form-control" id="ExitDate">
+                </div>
+            </div>
+            <button type="submit" class="btn mx-auto d-block mt-5" id="button1">Add Car</button>
+        </form>
+    </div>
+    <div class="table-container mt-5 mb-5 w-75 mx-auto" >
+            <h5 class="text-center mb-3 bg-success p-2 text-light">List of Cars in Parking Lot</h5>
+            <table class="table table-striped shadow  ">
+                    <thead class="text-white" id="tableHead">
+                      <tr>
+                        <th scope="col">Owner</th>
+                        <th scope="col">Car</th>
+                        <th scope="col">License Plate</th>
+                        <th scope="col">Entry Date</th>
+                        <th scope="col">Exit Date</th>
+                        <th scope="col">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                     
+                    </tbody>
+                  </table>
+    </div>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <script>
+class Entry{
+    constructor(Owner,Car,LicensePlate,EntryDate,ExitDate){
+        this.Owner = Owner;
+        this.Car = Car;
+        this.LicensePlate = LicensePlate;
+        this.EntryDate = EntryDate;
+        this.ExitDate = ExitDate;
+    }
+}
+
+class main{
+    static fetch(){
+   
+        const entries = handle.Get();
+        entries.forEach((entry) => main.ADD(entry));
+    }
+    static ADD(entry){
+        const tableBody=document.querySelector('#tableBody');
+        const row = document.createElement('tr');
+        row.innerHTML = `   <td>${entry.Owner}</td>
+                            <td>${entry.Car}</td>
+                            <td>${entry.LicensePlate}</td>
+                            <td>${entry.EntryDate}</td>
+                            <td>${entry.ExitDate}</td>
+                            <td><button class="btn btn-danger delete">X</button></td>
+                        `;
+        tableBody.appendChild(row);
+    }
+    static Clear(){
+        const inputs = document.querySelectorAll('.form-control');
+        inputs.forEach((input)=>input.value="");
+    }
+    static Delete(target){
+        if(target.classList.contains('delete')){
+            target.parentElement.parentElement.remove();
+        }
+    }
+    static Warning(message,className){
+        const div = document.createElement('div');
+        div.className=`alert alert-${className} w-50 mx-auto`;
+        div.appendChild(document.createTextNode(message));
+        const formContainer = document.querySelector('.form-container');
+        const form = document.querySelector('#entryForm');
+        formContainer.insertBefore(div,form);
+        setTimeout(() => document.querySelector('.alert').remove(),3000);
+    }
+    static Check(){
+        const Owner = document.querySelector('#Owner').value;
+        const Car = document.querySelector('#Car').value;
+        const LicensePlate = document.querySelector('#LicensePlate').value;
+        const EntryDate = document.querySelector('#EntryDate').value;
+        const ExitDate = document.querySelector('#ExitDate').value;
+        var LicensePlateRegex = /^(?:[A-Z]{2}-\d{2}-\d{2})|(?:\d{2}-[A-Z]{2}-\d{2})|(?:\d{2}-\d{2}-[A-Z]{2})$/;
+        if(Owner === '' || Car === '' || LicensePlate === '' || EntryDate === '' || ExitDate === ''){
+            main.Warning('All fields must me filled!','danger');
+            return false;
+        }
+        if(ExitDate < EntryDate){
+            main.Warning('Exit Date cannot be lower than Entry Date','danger');
+            return false;
+        }
+        
+        return true;
+    }
+}
+
+class handle{
+    static Get(){
+        let entries;
+        if(localStorage.getItem('entries') === null){
+            entries = [];
+        }
+        else{
+            entries = JSON.parse(localStorage.getItem('entries'));
+        }
+        return entries;
+    }
+    static ADD_E(entry){
+        const entries = handle.Get();
+        entries.push(entry);
+        localStorage.setItem('entries', JSON.stringify(entries));
+    }
+    static Remove(LicensePlate){
+        const entries = handle.Get();
+        entries.forEach((entry,index) => {
+            if(entry.LicensePlate === LicensePlate){
+                entries.splice(index, 1);
+            }
+        });
+        localStorage.setItem('entries', JSON.stringify(entries));
+    }
+}
+
+    document.addEventListener('DOMContentLoaded',main.fetch);
+
+    document.querySelector('#entryForm').addEventListener('submit',(e)=>{
+        e.preventDefault();
+        
+        const Owner = document.querySelector('#Owner').value;
+        const Car = document.querySelector('#Car').value;
+        const LicensePlate = document.querySelector('#LicensePlate').value;
+        const EntryDate = document.querySelector('#EntryDate').value;
+        const ExitDate = document.querySelector('#ExitDate').value;
+        if(!main.Check()){
+            return;
+        }
+    
+        const entry = new Entry(Owner, Car, LicensePlate, EntryDate, ExitDate);
+        main.ADD(entry);
+        handle.ADD_E(entry);
+        main.Clear();
+
+        main.Warning('Car successfully added to the parking lot','success');
+
+    });
+
+    document.querySelector('#tableBody').addEventListener('click',(e)=>{
+        main.Delete(e.target);
+        var LicensePlate = e.target.parentElement.previousElementSibling.previousElementSibling.previousElementSibling.textContent;
+        handle.Remove(LicensePlate);
+        main.Warning('Car successfully removed from the parking lot list','success');
+    })
+
+    </script>
+</body>
+
+</html>
